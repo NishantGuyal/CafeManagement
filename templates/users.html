@@ -1,0 +1,107 @@
+{% extends 'index.html' %}
+
+{% block title %}User Management Page{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-semibold mb-4">User Management</h1>
+
+<!-- Button to Show/Hide Form -->
+<button class="bg-blue-500 text-white py-2 px-4 rounded-md mb-4" onclick="toggleForm()">Create New User</button>
+
+<!-- Form to Create New User (Initially Hidden) -->
+<div id="userForm" class="mb-4 hidden">
+    <form method="POST" action="{% url 'create_user' %}">
+        {% csrf_token %}
+        <div class="mb-4">
+            <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+            <input type="text" id="username" name="username" class="w-full px-4 py-2 border rounded-md" required>
+        </div>
+        <div class="mb-4">
+            <label for="department" class="block text-sm font-medium text-gray-700">Department</label>
+            <input type="text" id="department" name="department" class="w-full px-4 py-2 border rounded-md" required>
+        </div>
+        <div class="mb-4">
+            <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-md">Create User</button>
+        </div>
+    </form>
+</div>
+
+<!-- Table to Show Users -->
+<table class="min-w-full table-auto border-collapse bg-white shadow-md rounded-lg">
+    <thead class="bg-gray-100">
+        <tr>
+            <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Username</th>
+            <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Department</th>
+            <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Created At</th>
+            <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Updated At</th>
+            <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr class="border-b hover:bg-gray-50">
+            <td class="px-4 py-2 text-sm text-gray-800">{{ user.username }}</td>
+            <td class="px-4 py-2 text-sm text-gray-800">{{ user.department }}</td>
+            <td class="px-4 py-2 text-sm text-gray-800">{{ user.created_at }}</td>
+            <td class="px-4 py-2 text-sm text-gray-800">{{ user.updated_at }}</td>
+            <td class="px-4 py-2 text-sm text-gray-800">
+                <!-- Update Button -->
+                <button onclick="showUpdateForm({{ user.user_id }}, '{{ user.username }}', '{{ user.department }}')" class="bg-yellow-500 text-white py-1 px-4 rounded-md mr-2">Update</button>
+                <!-- Delete Button -->
+                <form method="POST" action="{% url 'remove_user' user.user_id %}" style="display:inline;" onsubmit="return confirmDelete()">
+                    {% csrf_token %}
+                    <button type="submit" class="bg-red-500 text-white py-1 px-4 rounded-md">Remove</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div id="updateUserForm" class="hidden mt-4">
+    <h2 class="text-2xl font-semibold mb-4">Update User</h2>
+    <form id="updateForm" method="POST" class="space-y-4">
+        {% csrf_token %}
+        <input type="hidden" id="updateUserId" name="user_id">
+        <div class="mb-4">
+            <label for="updateUsername" class="block text-sm font-medium text-gray-700">Username</label>
+            <input type="text" id="updateUsername" name="username" class="w-full px-4 py-2 border rounded-md" required>
+        </div>
+        <div class="mb-4">
+            <label for="updateDepartment" class="block text-sm font-medium text-gray-700">Department</label>
+            <input type="text" id="updateDepartment" name="department" class="w-full px-4 py-2 border rounded-md" required>
+        </div>
+        <div class="mb-4">
+            <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-md">Update User</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Function to toggle the visibility of the form
+    function toggleForm() {
+        const form = document.getElementById('userForm');
+        form.classList.toggle('hidden');
+    }
+
+    // Function to show the update form with user data
+    function showUpdateForm(userId, username, department) {
+        const form = document.getElementById('updateUserForm');
+        document.getElementById('updateUserId').value = userId;
+        document.getElementById('updateUsername').value = username;
+        document.getElementById('updateDepartment').value = department;
+        
+        // Dynamically set the form action URL to include the correct user_id
+        const formAction = "{% url 'update_user' 0 %}".replace("0", userId);
+        document.getElementById('updateForm').action = formAction;
+        
+        form.classList.remove('hidden');
+    }
+
+    // Confirmation dialog before submitting the delete form
+    function confirmDelete() {
+        return confirm("Are you sure you want to delete this user?");
+    }
+</script>
+
+{% endblock %}

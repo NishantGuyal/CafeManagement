@@ -17,8 +17,15 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+from . import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("__reload__/", include("django_browser_reload.urls")),
+    path("", views.index, name="index"),
+    path("accounts/", views.admin_login, name="admin_login"),
+    path("users/", views.user_management, name="user_management"),
+    path("create_user/", views.create_user, name="create_user"),
+    path("remove_user/<int:user_id>/", views.remove_user, name="remove_user"),
+    path('update_user/<int:user_id>/', views.update_user, name='update_user'),
 ]

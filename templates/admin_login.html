@@ -1,0 +1,31 @@
+{% extends 'index.html' %}\
+
+{% block title %}User Sign In Page{% endblock %}
+
+{% block content %}
+
+<h2>Admin Login</h2>
+    
+<form method="POST">
+    {% csrf_token %}
+    <div>
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+    </div>
+    
+    <div>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+    </div>
+    
+    <button type="submit">Login</button>
+</form>
+
+{% if messages %}
+    <ul>
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+{% endblock %}
