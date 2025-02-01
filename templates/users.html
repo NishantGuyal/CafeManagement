@@ -5,7 +5,28 @@
 {% block content %}
 <h1 class="text-3xl font-semibold mb-4">User Management</h1>
 
-<!-- Button to Show/Hide Form -->
+<!-- Update User Form (Appears at the Top) -->
+<div id="updateUserForm" class="hidden mb-6">
+    <h2 class="text-2xl font-semibold mb-4">Update User</h2>
+    <form id="updateForm" method="POST" class="space-y-4">
+        {% csrf_token %}
+        <input type="hidden" id="updateUserId" name="user_id">
+        <div class="mb-4">
+            <label for="updateUsername" class="block text-sm font-medium text-gray-700">Username</label>
+            <input type="text" id="updateUsername" name="username" class="w-full px-4 py-2 border rounded-md" required>
+        </div>
+        <div class="mb-4">
+            <label for="updateDepartment" class="block text-sm font-medium text-gray-700">Department</label>
+            <input type="text" id="updateDepartment" name="department" class="w-full px-4 py-2 border rounded-md" required>
+        </div>
+        <div class="mb-4">
+            <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-md">Update User</button>
+            <button type="button" onclick="hideUpdateForm()" class="bg-gray-500 text-white py-2 px-4 rounded-md">Cancel</button>
+        </div>
+    </form>
+</div>
+
+<!-- Button to Show/Hide Create Form -->
 <button class="bg-blue-500 text-white py-2 px-4 rounded-md mb-4" onclick="toggleForm()">Create New User</button>
 
 <!-- Form to Create New User (Initially Hidden) -->
@@ -58,47 +79,28 @@
     </tbody>
 </table>
 
-<div id="updateUserForm" class="hidden mt-4">
-    <h2 class="text-2xl font-semibold mb-4">Update User</h2>
-    <form id="updateForm" method="POST" class="space-y-4">
-        {% csrf_token %}
-        <input type="hidden" id="updateUserId" name="user_id">
-        <div class="mb-4">
-            <label for="updateUsername" class="block text-sm font-medium text-gray-700">Username</label>
-            <input type="text" id="updateUsername" name="username" class="w-full px-4 py-2 border rounded-md" required>
-        </div>
-        <div class="mb-4">
-            <label for="updateDepartment" class="block text-sm font-medium text-gray-700">Department</label>
-            <input type="text" id="updateDepartment" name="department" class="w-full px-4 py-2 border rounded-md" required>
-        </div>
-        <div class="mb-4">
-            <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-md">Update User</button>
-        </div>
-    </form>
-</div>
-
 <script>
-    // Function to toggle the visibility of the form
     function toggleForm() {
         const form = document.getElementById('userForm');
         form.classList.toggle('hidden');
     }
 
-    // Function to show the update form with user data
     function showUpdateForm(userId, username, department) {
         const form = document.getElementById('updateUserForm');
         document.getElementById('updateUserId').value = userId;
         document.getElementById('updateUsername').value = username;
         document.getElementById('updateDepartment').value = department;
         
-        // Dynamically set the form action URL to include the correct user_id
         const formAction = "{% url 'update_user' 0 %}".replace("0", userId);
         document.getElementById('updateForm').action = formAction;
         
         form.classList.remove('hidden');
     }
 
-    // Confirmation dialog before submitting the delete form
+    function hideUpdateForm() {
+        document.getElementById('updateUserForm').classList.add('hidden');
+    }
+
     function confirmDelete() {
         return confirm("Are you sure you want to delete this user?");
     }
