@@ -3,19 +3,19 @@
 {% block title %}Update Order #{{ order.order_id }}{% endblock %}
 
 {% block content %}
-<h1 class="text-3xl font-semibold mb-4">Update Order #{{ order.order_id }}</h1>
+<h1 class="text-3xl font-semibold mb-6 text-center text-gray-800">Update Order #{{ order.order_id }}</h1>
 
-<form method="POST">
+<form method="POST" class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-lg">
     {% csrf_token %}
 
     <div id="order-details-container">
         {% for order_detail in order_details %}
-        <div class="flex items-center gap-4 border p-4 mb-2 order-detail-row">
+        <div class="flex items-center gap-4 border p-4 mb-4 rounded-lg shadow-sm order-detail-row">
             <input type="hidden" name="order_detail_id[]" value="{{ order_detail.order_detail_id }}">
 
             <div class="w-1/4">
-                <label class="block">Customer</label>
-                <select name="customer_{{ order_detail.order_detail_id }}" class="w-full p-2 border rounded-md">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Customer</label>
+                <select name="customer_{{ order_detail.order_detail_id }}" class="w-full p-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     {% for user in users %}
                         <option value="{{ user.user_id }}" {% if user.user_id == order_detail.customer_id %}selected{% endif %}>
                             {{ user.username }}
@@ -25,8 +25,8 @@
             </div>
 
             <div class="w-1/4">
-                <label class="block">Item</label>
-                <select name="item_{{ order_detail.order_detail_id }}" class="w-full p-2 border rounded-md">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Item</label>
+                <select name="item_{{ order_detail.order_detail_id }}" class="w-full p-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                     {% for item in items %}
                         <option value="{{ item.item_id }}" {% if item.item_id == order_detail.item_id %}selected{% endif %}>
                             {{ item.item_name }}
@@ -36,23 +36,25 @@
             </div>
 
             <div class="w-1/4">
-                <label class="block">Quantity</label>
-                <input type="number" name="counter_{{ order_detail.order_detail_id }}" value="{{ order_detail.counter }}" class="w-full p-2 border rounded-md">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+                <input type="number" name="counter_{{ order_detail.order_detail_id }}" value="{{ order_detail.counter }}" class="w-full p-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
 
             <div class="w-1/4">
-                <button type="button" class="bg-red-500 text-white py-1 px-4 rounded-md remove-order">Remove</button>
+                <button type="button" class="bg-red-500 text-white py-1 px-4 rounded-md hover:bg-red-400 transition duration-200 remove-order"><i class="fas fa-trash-alt"></i></button>
             </div>
         </div>
         {% endfor %}
     </div>
 
-    <button type="button" class="bg-green-500 text-white py-2 px-4 rounded-md mt-4" id="add-new-order">Add New Item</button>
+    <button type="button" class="bg-green-500 text-white py-2 px-4 rounded-md mt-4 hover:bg-green-400 transition duration-200" id="add-new-order">Add New Item</button>
 
     <input type="hidden" name="deleted_order_details[]" id="deleted-order-details">
 
-    <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-md mt-4">Save Changes</button>
-    <a href="{% url 'order_report' %}" class="bg-gray-500 text-white py-2 px-4 rounded-md mt-4">Cancel</a>
+    <div class="mt-4 flex gap-4">
+        <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-400 transition duration-200 w-full sm:w-auto" onclick="successMessage()">Save Changes</button>
+        <a href="{% url 'order_report' %}" class="bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-400 transition duration-200 w-full sm:w-auto">Cancel</a>
+    </div>
 </form>
 
 <script>
@@ -60,32 +62,29 @@
 
     document.getElementById("add-new-order").addEventListener("click", function () {
         const newRow = `
-            <div class="flex items-center gap-4 border p-4 mb-2 order-detail-row">
+            <div class="flex items-center gap-4 border p-4 mb-4 rounded-lg shadow-sm order-detail-row">
                 <div class="w-1/4">
-                    <label class="block">Customer</label>
-                    <select name="new_customer[]" class="w-full p-2 border rounded-md">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Customer</label>
+                    <select name="new_customer[]" class="w-full p-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                         {% for user in users %}
                             <option value="{{ user.user_id }}">{{ user.username }}</option>
                         {% endfor %}
                     </select>
                 </div>
-
                 <div class="w-1/4">
-                    <label class="block">Item</label>
-                    <select name="new_item[]" class="w-full p-2 border rounded-md">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Item</label>
+                    <select name="new_item[]" class="w-full p-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                         {% for item in items %}
                             <option value="{{ item.item_id }}">{{ item.item_name }}</option>
                         {% endfor %}
                     </select>
                 </div>
-
                 <div class="w-1/4">
-                    <label class="block">Quantity</label>
-                    <input type="number" name="new_counter[]" class="w-full p-2 border rounded-md" value="1">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+                    <input type="number" name="new_counter[]" class="w-full p-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" value="1">
                 </div>
-
                 <div class="w-1/4">
-                    <button type="button" class="bg-red-500 text-white py-1 px-4 rounded-md remove-order">Remove</button>
+                    <button type="button" class="bg-red-500 text-white py-1 px-4 rounded-md hover:bg-red-400 transition duration-200 remove-order"><i class="fas fa-trash-alt"></i></button>
                 </div>
             </div>
         `;
@@ -101,7 +100,6 @@
             if (orderDetailId && !removedOrderDetails.includes(parseInt(orderDetailId))) {
                 removedOrderDetails.push(parseInt(orderDetailId));
             }
-
             row.remove();
         }
     });
@@ -111,5 +109,9 @@
         
         deletedOrderDetailsInput.value = removedOrderDetails.join(',');
     });
+
+    function successMessage() {
+        return alert("Changes saved successfully");
+    }
 </script>
 {% endblock %}

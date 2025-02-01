@@ -3,87 +3,92 @@
 {% block title %}User Management Page{% endblock %}
 
 {% block content %}
-<h1 class="text-3xl font-semibold mb-4">User Management</h1>
+<div class="max-w-8xl mx-auto px-4 py-1">
+    <h1 class="text-3xl font-semibold mb-6 text-center text-gray-800">User Management</h1>
 
-<div id="updateUserForm" class="hidden mb-6">
-    <h2 class="text-2xl font-semibold mb-4">Update User</h2>
-    <form id="updateForm" method="POST" class="space-y-4">
-        {% csrf_token %}
-        <input type="hidden" id="updateUserId" name="user_id">
-        <div class="mb-4">
-            <label for="updateUsername" class="block text-sm font-medium text-gray-700">Username</label>
-            <input type="text" id="updateUsername" name="username" class="w-full px-4 py-2 border rounded-md" required>
-        </div>
-        <div class="mb-4">
-            <label for="updateDepartment" class="block text-sm font-medium text-gray-700">Department</label>
-            <input type="text" id="updateDepartment" name="department" class="w-full px-4 py-2 border rounded-md" required>
-        </div>
-        <div class="mb-4">
-            <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-md">Update User</button>
-            <button type="button" onclick="hideUpdateForm()" class="bg-gray-500 text-white py-2 px-4 rounded-md">Cancel</button>
-        </div>
-    </form>
-</div>
-
-<button class="bg-blue-500 text-white py-2 px-4 rounded-md mb-4" onclick="toggleForm()">Create New User</button>
-
-<div id="userForm" class="mb-4 hidden">
-    <form method="POST" action="{% url 'create_user' %}">
-        {% csrf_token %}
-        <div class="mb-4">
-            <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
-            <input type="text" id="username" name="username" class="w-full px-4 py-2 border rounded-md" required>
-        </div>
-        <div class="mb-4">
-            <label for="department" class="block text-sm font-medium text-gray-700">Department</label>
-            <input type="text" id="department" name="department" class="w-full px-4 py-2 border rounded-md" required>
-        </div>
-        <div class="mb-4">
-            <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-md">Create User</button>
-        </div>
-    </form>
-</div>
-
-<table class="min-w-full table-auto border-collapse bg-white shadow-md rounded-lg">
-    <thead class="bg-gray-100">
-        <tr>
-            <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Username</th>
-            <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Department</th>
-            <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Created At</th>
-            <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Updated At</th>
-            <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for user in users %}
-        <tr class="border-b hover:bg-gray-50">
-            <td class="px-4 py-2 text-sm text-gray-800">{{ user.username }}</td>
-            <td class="px-4 py-2 text-sm text-gray-800">{{ user.department }}</td>
-            <td class="px-4 py-2 text-sm text-gray-800">{{ user.created_at }}</td>
-            <td class="px-4 py-2 text-sm text-gray-800">{{ user.updated_at }}</td>
-            <td class="px-4 py-2 text-sm text-gray-800">
-                <button onclick="showUpdateForm({{ user.user_id }}, '{{ user.username }}', '{{ user.department }}')" class="bg-yellow-500 text-white py-1 px-4 rounded-md mr-2">Update</button>
-                <form method="POST" action="{% url 'remove_user' user.user_id %}" style="display:inline;" onsubmit="return confirmDelete()">
-                    {% csrf_token %}
-                    <button type="submit" class="bg-red-500 text-white py-1 px-4 rounded-md">Remove</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
-<div id="update-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center hidden">
-    <div class="bg-white p-6 rounded-lg w-1/2">
-        <h2 class="text-2xl mb-4">Update Order Details</h2>
-
-        <form method="POST">
+    <!-- Update User Form -->
+    <div class="max-w-4xl mx-auto hidden mb-6" id="updateUserForm">
+        <h2 class="text-1xl font-semibold mb-4 text-gray-800">Update User</h2>
+        <form id="updateForm" method="POST" class="space-y-6 bg-white p-6 rounded-lg shadow-md">
             {% csrf_token %}
-            <div id="order-details-container"></div>
-
-            <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-md mt-4">Save Changes</button>
-            <button type="button" onclick="closeUpdateModal()" class="bg-gray-500 text-white py-2 px-4 rounded-md mt-4">Cancel</button>
+            <input type="hidden" id="updateUserId" name="user_id">
+            <div class="mb-4">
+                <label for="updateUsername" class="block text-sm font-medium text-gray-700 my-2">Username</label>
+                <input type="text" id="updateUsername" name="username" class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500" required>
+            </div>
+            <div class="mb-4">
+                <label for="updateDepartment" class="block text-sm font-medium text-gray-700 my-2">Department</label>
+                <input type="text" id="updateDepartment" name="department" class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500" required>
+            </div>
+            <div class="flex space-x-4">
+                <button type="submit" class="bg-blue-500 text-white py-2 px-6 rounded-md hover:bg-blue-600 transition">Update User</button>
+                <button type="button" onclick="hideUpdateForm()" class="bg-gray-500 text-white py-2 px-6 rounded-md hover:bg-gray-600 transition">Cancel</button>
+            </div>
         </form>
+    </div>
+
+    <!-- Create User Button -->
+    <button class="bg-green-500 text-white py-2 px-6 rounded-md mb-6 hover:bg-green-600 transition" onclick="toggleForm()">Create New User</button>
+
+    <!-- Create User Form -->
+    <div id="userForm" class="mb-6 hidden bg-white p-6 rounded-lg shadow-md max-w-4xl mx-auto">
+        <form method="POST" action="{% url 'create_user' %}" class="space-y-6">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label for="username" class="block text-sm font-medium text-gray-700 my-2">Username</label>
+                <input type="text" id="username" name="username" class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500" required>
+            </div>
+            <div class="mb-4">
+                <label for="department" class="block text-sm font-medium text-gray-700 my-2">Department</label>
+                <input type="text" id="department" name="department" class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500" required>
+            </div>
+            <button type="submit" class="bg-green-500 text-white py-2 px-6 rounded-md hover:bg-green-600 transition">Create User</button>
+        </form>
+    </div>
+
+    <!-- User Table -->
+    <div class="overflow-x-auto bg-white shadow-md rounded-lg my-4">
+        <table class="min-w-full table-auto border-collapse">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Username</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Department</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Created At</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Updated At</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-600">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="px-4 py-2 text-sm text-gray-800">{{ user.username }}</td>
+                    <td class="px-4 py-2 text-sm text-gray-800">{{ user.department }}</td>
+                    <td class="px-4 py-2 text-sm text-gray-800">{{ user.created_at }}</td>
+                    <td class="px-4 py-2 text-sm text-gray-800">{{ user.updated_at }}</td>
+                    <td class="px-4 py-2 text-sm text-gray-800 flex space-x-4">
+                        <button onclick="showUpdateForm({{ user.user_id }}, '{{ user.username }}', '{{ user.department }}')" class="bg-yellow-500 text-white py-1 px-4 rounded-md hover:bg-yellow-600 transition">Update</button>
+                        <form method="POST" action="{% url 'remove_user' user.user_id %}" style="display:inline;" onsubmit="return confirmDelete()">
+                            {% csrf_token %}
+                            <button type="submit" class="bg-red-500 text-white py-1 px-4 rounded-md hover:bg-red-600 transition">Remove</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Update Modal -->
+    <div id="update-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center hidden">
+        <div class="bg-white p-6 rounded-lg w-1/2">
+            <h2 class="text-2xl mb-4">Update Order Details</h2>
+            <form method="POST">
+                {% csrf_token %}
+                <div id="order-details-container"></div>
+                <button type="submit" class="bg-blue-500 text-white py-2 px-6 rounded-md mt-4 hover:bg-blue-600 transition">Save Changes</button>
+                <button type="button" onclick="closeUpdateModal()" class="bg-gray-500 text-white py-2 px-6 rounded-md mt-4 hover:bg-gray-600 transition">Cancel</button>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -114,12 +119,11 @@
     }
 
     function openUpdateModal(orderId) {
-        // Fetch order details using AJAX and show in the modal
         fetch(`/order/update/${orderId}/`)
             .then(response => response.json())
             .then(data => {
                 const container = document.getElementById('order-details-container');
-                container.innerHTML = ''; // Clear previous content
+                container.innerHTML = '';
 
                 data.order_details.forEach(orderDetail => {
                     const div = document.createElement('div');
@@ -134,7 +138,6 @@
                                 `).join('')}
                             </select>
                         </div>
-
                         <div class="w-1/3">
                             <label for="item_${orderDetail.order_detail_id}" class="block text-lg">Item</label>
                             <select name="item_${orderDetail.order_detail_id}" id="item_${orderDetail.order_detail_id}" class="w-full p-2 border border-gray-300 rounded-md">
@@ -143,7 +146,6 @@
                                 `).join('')}
                             </select>
                         </div>
-
                         <div class="w-1/3">
                             <label for="counter_${orderDetail.order_detail_id}" class="block text-lg">Quantity</label>
                             <input type="number" name="counter_${orderDetail.order_detail_id}" id="counter_${orderDetail.order_detail_id}" value="${orderDetail.counter}" class="w-full p-2 border border-gray-300 rounded-md">
@@ -153,7 +155,6 @@
                     container.appendChild(div);
                 });
 
-                // Show the modal
                 document.getElementById('update-modal').classList.remove('hidden');
             });
     }
@@ -161,7 +162,6 @@
     function closeUpdateModal() {
         document.getElementById('update-modal').classList.add('hidden');
     }
-
 </script>
 
 {% endblock %}

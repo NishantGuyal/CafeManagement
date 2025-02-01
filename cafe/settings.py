@@ -142,3 +142,6 @@ TAILWIND_APP_NAME = "theme"
 INTERNAL_IPS = [
     "127.0.0.1",
 ]
+
+LOGOUT_REDIRECT_URL = "admin_login"
+LOGIN_URL = "admin_login"  # Redirect to 'admin_login' view on login required

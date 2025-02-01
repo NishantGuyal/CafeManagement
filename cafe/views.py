@@ -1,16 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.utils.timezone import now
 from django.contrib import messages
 from .models import Order, Item, User, OrderDetail
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.db.models import Sum, Q
+from django.contrib.auth.decorators import login_required
 
 
+@login_required
 def index(request):
-    if not request.user.is_authenticated:
-        return redirect("admin_login")
-
     return render(request, "index.html")
 
 
@@ -33,10 +32,14 @@ def admin_login(request):
     return render(request, "admin_login.html")
 
 
+def custom_logout(request):
+    logout(request)
+    return redirect("admin_login")
+
+@login_required
 def user_management(request):
     users = User.objects.filter(deleted_at__isnull=True)
     return render(request, "users.html", {"users": users})
-
 
 def create_user(request):
     if request.method == "POST":
@@ -67,7 +70,7 @@ def update_user(request, user_id):
 
     return HttpResponse("Invalid request", status=400)
 
-
+@login_required
 def item_list(request):
     items = Item.objects.filter(deleted_at__isnull=True)
     return render(request, "items.html", {"items": items})
@@ -97,7 +100,7 @@ def remove_item(request, item_id):
         item.save()
         return redirect("item_list")
 
-
+@login_required
 def order_management(request):
     users = User.objects.filter(deleted_at__isnull=True)
     items = Item.objects.filter(deleted_at__isnull=True)
@@ -123,13 +126,13 @@ def create_order(request):
                 ordered_at=now(),
                 updated_at=now(),
             )
-
-        return redirect("order_management")
+        
+        return redirect("order_report")
 
     else:
         return HttpResponse("Invalid request method", status=405)
 
-
+@login_required
 def order_report(request):
     orders = Order.objects.annotate(
         total_quantity=Sum(
