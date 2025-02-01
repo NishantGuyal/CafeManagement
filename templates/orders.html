@@ -84,7 +84,6 @@
         $('#order-details-container').append(newOrderDetail);
     }
 
-    // Remove the mini order row
     function removeOrderDetail(button) {
         const row = $(button).closest('.order-detail-row');
         if (orderDetailCount > 1) {
@@ -92,6 +91,7 @@
             orderDetailCount--;
         }
     }
+    
 </script>
 
 {% endblock %}

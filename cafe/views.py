@@ -3,8 +3,8 @@ from django.contrib.auth import authenticate, login
 from django.utils.timezone import now
 from django.contrib import messages
 from .models import Order, Item, User, OrderDetail
-from django.http import HttpResponse
-from django.db.models import Sum
+from django.http import HttpResponse, JsonResponse
+from django.db.models import Sum, Q
 
 
 def index(request):
@@ -106,20 +106,15 @@ def order_management(request):
 
 def create_order(request):
     if request.method == "POST":
-        # Create a new order entry in the Order table
         order = Order.objects.create(created_at=now(), updated_at=now())
 
-        # Get the form data from the POST request
         customers = request.POST.getlist("customer")
         items = request.POST.getlist("item")
         counters = request.POST.getlist("counter")
 
-        # Loop through the customers, items, and counters to create corresponding OrderDetail entries
         for customer_id, item_id, counter in zip(customers, items, counters):
-            # Ensure counter is an integer and defaults to 0 if empty
             counter = int(counter) if counter else 0
 
-            # Create the order details for each mini order
             OrderDetail.objects.create(
                 order=order,
                 customer_id=customer_id,
@@ -129,37 +124,108 @@ def create_order(request):
                 updated_at=now(),
             )
 
-        # After saving the order and its details, redirect to the main order page
-        return redirect("order_management")  # Redirect to the order management page
+        return redirect("order_management")
 
     else:
         return HttpResponse("Invalid request method", status=405)
 
 
 def order_report(request):
-    # Fetch orders along with the sum of counter from order_details
     orders = Order.objects.annotate(
-        total_quantity=Sum("order_details__counter")
+        total_quantity=Sum(
+            "order_details__counter",
+            filter=Q(order_details__deleted_at__isnull=True),
+        )
     ).filter(deleted_at__isnull=True)
 
-    # Render the template and pass the orders with their total quantity
     return render(request, "order_report.html", {"orders": orders})
+
 
 def order_delete(request, order_id):
     order = get_object_or_404(Order, order_id=order_id)
 
-    # Update the `deleted_at` field for the order and its corresponding order details
     deleted_at = now()
 
-    # Update Order
     order.deleted_at = deleted_at
     order.save()
 
-    # Update OrderDetails
     order_details = OrderDetail.objects.filter(order=order)
     for order_detail in order_details:
         order_detail.deleted_at = deleted_at
         order_detail.save()
 
-    # Redirect to the order management page or order list
-    return redirect('order_report')  # Replace 'order_management' with your actual URL name
+    return redirect("order_report")
+
+
+def update_order(request, order_id):
+    order = get_object_or_404(Order, order_id=order_id)
+    order_details = OrderDetail.objects.filter(order=order, deleted_at__isnull=True)
+
+    users = User.objects.filter(deleted_at__isnull=True)
+    items = Item.objects.filter(deleted_at__isnull=True)
+
+    if request.method == "POST":
+        changes_made = False
+
+        submitted_order_details = request.POST.getlist("order_detail_id[]")
+        for order_detail_id in submitted_order_details:
+            order_detail = OrderDetail.objects.get(order_detail_id=order_detail_id)
+
+            new_customer_id = request.POST.get(f"customer_{order_detail_id}")
+            new_item_id = request.POST.get(f"item_{order_detail_id}")
+            new_counter = request.POST.get(f"counter_{order_detail_id}")
+
+            if (
+                str(order_detail.customer_id) != new_customer_id
+                or str(order_detail.item_id) != new_item_id
+                or str(order_detail.counter) != new_counter
+            ):
+                order_detail.customer_id = new_customer_id
+                order_detail.item_id = new_item_id
+                order_detail.counter = new_counter
+                order_detail.updated_at = now()
+                order_detail.save()
+                changes_made = True
+
+        new_customers = request.POST.getlist("new_customer[]")
+        new_items = request.POST.getlist("new_item[]")
+        new_counters = request.POST.getlist("new_counter[]")
+        for i in range(len(new_customers)):
+            if new_customers[i] and new_items[i] and new_counters[i]:
+                OrderDetail.objects.create(
+                    order=order,
+                    customer_id=new_customers[i],
+                    item_id=new_items[i],
+                    counter=new_counters[i],
+                    updated_at=now(),
+                )
+                changes_made = True
+
+        deleted_order_detail_ids = request.POST.getlist("deleted_order_details[]")
+        deleted_order_detail_ids = [
+            int(id) for id in deleted_order_detail_ids if id.isdigit()
+        ]
+
+        for deleted_id in deleted_order_detail_ids:
+            if deleted_id:
+                OrderDetail.objects.filter(order_detail_id=deleted_id).update(
+                    deleted_at=now()
+                )
+                changes_made = True
+
+        if changes_made:
+            order.updated_at = now()
+            order.save()
+
+        return redirect("order_report")
+
+    return render(
+        request,
+        "update_order.html",
+        {
+            "order": order,
+            "order_details": order_details,
+            "users": users,
+            "items": items,
+        },
+    )

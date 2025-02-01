@@ -5,7 +5,6 @@
 {% block content %}
 <h1 class="text-3xl font-semibold mb-4">User Management</h1>
 
-<!-- Update User Form (Appears at the Top) -->
 <div id="updateUserForm" class="hidden mb-6">
     <h2 class="text-2xl font-semibold mb-4">Update User</h2>
     <form id="updateForm" method="POST" class="space-y-4">
@@ -26,10 +25,8 @@
     </form>
 </div>
 
-<!-- Button to Show/Hide Create Form -->
 <button class="bg-blue-500 text-white py-2 px-4 rounded-md mb-4" onclick="toggleForm()">Create New User</button>
 
-<!-- Form to Create New User (Initially Hidden) -->
 <div id="userForm" class="mb-4 hidden">
     <form method="POST" action="{% url 'create_user' %}">
         {% csrf_token %}
@@ -47,7 +44,6 @@
     </form>
 </div>
 
-<!-- Table to Show Users -->
 <table class="min-w-full table-auto border-collapse bg-white shadow-md rounded-lg">
     <thead class="bg-gray-100">
         <tr>
@@ -66,9 +62,7 @@
             <td class="px-4 py-2 text-sm text-gray-800">{{ user.created_at }}</td>
             <td class="px-4 py-2 text-sm text-gray-800">{{ user.updated_at }}</td>
             <td class="px-4 py-2 text-sm text-gray-800">
-                <!-- Update Button -->
                 <button onclick="showUpdateForm({{ user.user_id }}, '{{ user.username }}', '{{ user.department }}')" class="bg-yellow-500 text-white py-1 px-4 rounded-md mr-2">Update</button>
-                <!-- Delete Button -->
                 <form method="POST" action="{% url 'remove_user' user.user_id %}" style="display:inline;" onsubmit="return confirmDelete()">
                     {% csrf_token %}
                     <button type="submit" class="bg-red-500 text-white py-1 px-4 rounded-md">Remove</button>
@@ -78,6 +72,20 @@
         {% endfor %}
     </tbody>
 </table>
+
+<div id="update-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center hidden">
+    <div class="bg-white p-6 rounded-lg w-1/2">
+        <h2 class="text-2xl mb-4">Update Order Details</h2>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div id="order-details-container"></div>
+
+            <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-md mt-4">Save Changes</button>
+            <button type="button" onclick="closeUpdateModal()" class="bg-gray-500 text-white py-2 px-4 rounded-md mt-4">Cancel</button>
+        </form>
+    </div>
+</div>
 
 <script>
     function toggleForm() {
@@ -104,6 +112,56 @@
     function confirmDelete() {
         return confirm("Are you sure you want to delete this user?");
     }
+
+    function openUpdateModal(orderId) {
+        // Fetch order details using AJAX and show in the modal
+        fetch(`/order/update/${orderId}/`)
+            .then(response => response.json())
+            .then(data => {
+                const container = document.getElementById('order-details-container');
+                container.innerHTML = ''; // Clear previous content
+
+                data.order_details.forEach(orderDetail => {
+                    const div = document.createElement('div');
+                    div.classList.add('flex', 'items-center', 'gap-4');
+
+                    div.innerHTML = `
+                        <div class="w-1/3">
+                            <label for="customer_${orderDetail.order_detail_id}" class="block text-lg">Customer</label>
+                            <select name="customer_${orderDetail.order_detail_id}" id="customer_${orderDetail.order_detail_id}" class="w-full p-2 border border-gray-300 rounded-md">
+                                ${data.users.map(user => `
+                                    <option value="${user.user_id}" ${user.user_id === orderDetail.customer_id ? 'selected' : ''}>${user.username}</option>
+                                `).join('')}
+                            </select>
+                        </div>
+
+                        <div class="w-1/3">
+                            <label for="item_${orderDetail.order_detail_id}" class="block text-lg">Item</label>
+                            <select name="item_${orderDetail.order_detail_id}" id="item_${orderDetail.order_detail_id}" class="w-full p-2 border border-gray-300 rounded-md">
+                                ${data.items.map(item => `
+                                    <option value="${item.item_id}" ${item.item_id === orderDetail.item_id ? 'selected' : ''}>${item.item_name}</option>
+                                `).join('')}
+                            </select>
+                        </div>
+
+                        <div class="w-1/3">
+                            <label for="counter_${orderDetail.order_detail_id}" class="block text-lg">Quantity</label>
+                            <input type="number" name="counter_${orderDetail.order_detail_id}" id="counter_${orderDetail.order_detail_id}" value="${orderDetail.counter}" class="w-full p-2 border border-gray-300 rounded-md">
+                        </div>
+                    `;
+
+                    container.appendChild(div);
+                });
+
+                // Show the modal
+                document.getElementById('update-modal').classList.remove('hidden');
+            });
+    }
+
+    function closeUpdateModal() {
+        document.getElementById('update-modal').classList.add('hidden');
+    }
+
 </script>
 
 {% endblock %}
