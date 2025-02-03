@@ -1,0 +1,54 @@
+{% load static %}
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+    
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+      rel="stylesheet"
+    />
+    
+    {% tailwind_css %}
+    <title>{% block title %}Cafe Management{% endblock %}</title>
+  </head>
+  <body class="bg-violet-100 font-sans">
+
+    {% block navBar %}
+    <nav class="bg-violet-800 text-white shadow-md">
+      <div class="container mx-auto flex justify-between items-center p-4">
+        <div class="text-2xl font-semibold">
+          <a href="{% url 'index' %}" class="text-white hover:text-gray-300">Cafe Management</a>
+        </div>
+        
+        <div class="flex space-x-6">
+          <a href="{% url 'user_management' %}" class="text-white text-lg hover:text-gray-300 transform transition-all duration-200 hover:scale-110 hover:text-l">Users</a>
+          <a href="{% url 'item_list' %}" class="text-white text-lg hover:text-gray-300 transform transition-all duration-200 hover:scale-110 hover:text-l mr-2">Items</a>
+          <a href="{% url 'order_management' %}" class="text-white text-lg hover:text-gray-300 transform transition-all duration-200 hover:scale-110 hover:text-l">Orders</a>
+          <a href="{% url 'order_report' %}" class="text-white text-lg hover:text-gray-300 transform transition-all duration-200 hover:scale-110 hover:text-l">Order Records</a>
+          
+          {% if user.is_authenticated %}
+          <a href="{% url 'logout' %}" class="text-white text-lg hover:text-gray-300 transform transition-all duration-200 hover:scale-110 hover:text-l">Logout</a>
+          {% endif %}
+        </div>
+      </div>
+    </nav>
+    {% endblock navBar %}
+
+    <div class="py-16">
+      {% block content %}
+      <h1 class="text-3xl font-bold text-center text-gray-800">Welcome to Cafe Management</h1>
+      {% endblock %}
+    </div>
+
+  </body>
+</html>

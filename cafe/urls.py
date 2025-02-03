@@ -17,8 +17,25 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+from . import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("__reload__/", include("django_browser_reload.urls")),
+    path("", views.index, name="index"),
+    path("accounts/", views.admin_login, name="admin_login"),
+    path("users/", views.user_management, name="user_management"),
+    path("create_user/", views.create_user, name="create_user"),
+    path("remove_user/<int:user_id>/", views.remove_user, name="remove_user"),
+    path("update_user/<int:user_id>/", views.update_user, name="update_user"),
+    path("items/", views.item_list, name="item_list"),
+    path("items/create/", views.create_item, name="create_item"),
+    path("items/update/<int:item_id>/", views.update_item, name="update_item"),
+    path("items/delete/<int:item_id>/", views.remove_item, name="remove_item"),
+    path("orders/", views.order_management, name="order_management"),
+    path("create_order/", views.create_order, name="create_order"),
+    path("order_report/", views.order_report, name="order_report"),
+    path("order/<int:order_id>/delete/", views.order_delete, name="order_delete"),
+    path("order/update/<int:order_id>/", views.update_order, name="update_order"),
+    path("logout/", views.admin_logout, name="logout"),
 ]
