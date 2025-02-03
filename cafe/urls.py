@@ -37,6 +37,5 @@ urlpatterns = [
     path("order_report/", views.order_report, name="order_report"),
     path("order/<int:order_id>/delete/", views.order_delete, name="order_delete"),
     path("order/update/<int:order_id>/", views.update_order, name="update_order"),
-    path("order/update/<int:order_id>/", views.update_order, name="update_order"),
-    path("logout/", views.custom_logout, name="logout"),
+    path("logout/", views.admin_logout, name="logout"),
 ]

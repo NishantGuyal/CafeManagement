@@ -27,7 +27,6 @@
         </form>
     </div>
 
-    <!-- Create User Button -->
     <button class="bg-green-500 text-white py-2 px-6 rounded-md mb-6 hover:bg-green-600 transition" onclick="toggleForm()">Create New User</button>
 
     <!-- Create User Form -->
@@ -77,22 +76,10 @@
             </tbody>
         </table>
     </div>
-
-    <!-- Update Modal -->
-    <div id="update-modal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center hidden">
-        <div class="bg-white p-6 rounded-lg w-1/2">
-            <h2 class="text-2xl mb-4">Update Order Details</h2>
-            <form method="POST">
-                {% csrf_token %}
-                <div id="order-details-container"></div>
-                <button type="submit" class="bg-blue-500 text-white py-2 px-6 rounded-md mt-4 hover:bg-blue-600 transition">Save Changes</button>
-                <button type="button" onclick="closeUpdateModal()" class="bg-gray-500 text-white py-2 px-6 rounded-md mt-4 hover:bg-gray-600 transition">Cancel</button>
-            </form>
-        </div>
-    </div>
 </div>
 
 <script>
+
     function toggleForm() {
         const form = document.getElementById('userForm');
         form.classList.toggle('hidden');
@@ -118,50 +105,6 @@
         return confirm("Are you sure you want to delete this user?");
     }
 
-    function openUpdateModal(orderId) {
-        fetch(`/order/update/${orderId}/`)
-            .then(response => response.json())
-            .then(data => {
-                const container = document.getElementById('order-details-container');
-                container.innerHTML = '';
-
-                data.order_details.forEach(orderDetail => {
-                    const div = document.createElement('div');
-                    div.classList.add('flex', 'items-center', 'gap-4');
-
-                    div.innerHTML = `
-                        <div class="w-1/3">
-                            <label for="customer_${orderDetail.order_detail_id}" class="block text-lg">Customer</label>
-                            <select name="customer_${orderDetail.order_detail_id}" id="customer_${orderDetail.order_detail_id}" class="w-full p-2 border border-gray-300 rounded-md">
-                                ${data.users.map(user => `
-                                    <option value="${user.user_id}" ${user.user_id === orderDetail.customer_id ? 'selected' : ''}>${user.username}</option>
-                                `).join('')}
-                            </select>
-                        </div>
-                        <div class="w-1/3">
-                            <label for="item_${orderDetail.order_detail_id}" class="block text-lg">Item</label>
-                            <select name="item_${orderDetail.order_detail_id}" id="item_${orderDetail.order_detail_id}" class="w-full p-2 border border-gray-300 rounded-md">
-                                ${data.items.map(item => `
-                                    <option value="${item.item_id}" ${item.item_id === orderDetail.item_id ? 'selected' : ''}>${item.item_name}</option>
-                                `).join('')}
-                            </select>
-                        </div>
-                        <div class="w-1/3">
-                            <label for="counter_${orderDetail.order_detail_id}" class="block text-lg">Quantity</label>
-                            <input type="number" name="counter_${orderDetail.order_detail_id}" id="counter_${orderDetail.order_detail_id}" value="${orderDetail.counter}" class="w-full p-2 border border-gray-300 rounded-md">
-                        </div>
-                    `;
-
-                    container.appendChild(div);
-                });
-
-                document.getElementById('update-modal').classList.remove('hidden');
-            });
-    }
-
-    function closeUpdateModal() {
-        document.getElementById('update-modal').classList.add('hidden');
-    }
 </script>
 
 {% endblock %}

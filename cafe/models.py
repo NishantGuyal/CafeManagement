@@ -1,5 +1,4 @@
 from django.db import models
-from django.utils.timezone import now
 
 
 class User(models.Model):
@@ -50,3 +49,6 @@ class OrderDetail(models.Model):
 
     def __str__(self):
         return f"OrderDetail #{self.order_detail_id} - Item #{self.item.item_id} (Qty: {self.counter})"
+
+    class Meta:
+        db_table = "cafe_order_details"

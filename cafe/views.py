@@ -32,14 +32,16 @@ def admin_login(request):
     return render(request, "admin_login.html")
 
 
-def custom_logout(request):
+def admin_logout(request):
     logout(request)
     return redirect("admin_login")
+
 
 @login_required
 def user_management(request):
     users = User.objects.filter(deleted_at__isnull=True)
     return render(request, "users.html", {"users": users})
+
 
 def create_user(request):
     if request.method == "POST":
@@ -69,6 +71,7 @@ def update_user(request, user_id):
         return redirect("user_management")
 
     return HttpResponse("Invalid request", status=400)
+
 
 @login_required
 def item_list(request):
@@ -100,6 +103,7 @@ def remove_item(request, item_id):
         item.save()
         return redirect("item_list")
 
+
 @login_required
 def order_management(request):
     users = User.objects.filter(deleted_at__isnull=True)
@@ -116,7 +120,7 @@ def create_order(request):
         counters = request.POST.getlist("counter")
 
         for customer_id, item_id, counter in zip(customers, items, counters):
-            counter = int(counter) if counter else 0
+            counter = int(counter) if counter else 1
 
             OrderDetail.objects.create(
                 order=order,
@@ -126,11 +130,12 @@ def create_order(request):
                 ordered_at=now(),
                 updated_at=now(),
             )
-        
+
         return redirect("order_report")
 
     else:
         return HttpResponse("Invalid request method", status=405)
+
 
 @login_required
 def order_report(request):

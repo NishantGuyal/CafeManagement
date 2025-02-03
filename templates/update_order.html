@@ -41,8 +41,9 @@
             </div>
 
             <div class="w-1/4">
-                <button type="button" class="bg-red-500 text-white py-1 px-4 rounded-md hover:bg-red-400 transition duration-200 remove-order"><i class="fas fa-trash-alt"></i></button>
+                <button type="button" class="bg-red-500 text-white py-2 mt-4 px-4 rounded-md hover:bg-red-400 transition duration-200 remove-order"><i class="fas fa-trash-alt"></i></button>
             </div>
+            
         </div>
         {% endfor %}
     </div>
@@ -52,7 +53,7 @@
     <input type="hidden" name="deleted_order_details[]" id="deleted-order-details">
 
     <div class="mt-4 flex gap-4">
-        <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-400 transition duration-200 w-full sm:w-auto" onclick="successMessage()">Save Changes</button>
+        <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-400 transition duration-200 w-full sm:w-auto" onclick="validateAndSubmit(event)">Save Changes</button>
         <a href="{% url 'order_report' %}" class="bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-400 transition duration-200 w-full sm:w-auto">Cancel</a>
     </div>
 </form>
@@ -110,8 +111,28 @@
         deletedOrderDetailsInput.value = removedOrderDetails.join(',');
     });
 
+    function validateAndSubmit(event) {
+        let isValid = true;
+
+        document.querySelectorAll('.order-detail-row').forEach(function(row) {
+            const quantityInput = row.querySelector('input[type="number"]');
+            const quantity = parseInt(quantityInput.value);
+            if (quantity <= 0) {
+                isValid = false;
+                alert('Quantity must be greater than 0.');
+                return false;
+            }
+        });
+
+        if (isValid) {
+            successMessage();
+        } else {
+            event.preventDefault();
+        }
+    }
+
     function successMessage() {
-        return alert("Changes saved successfully");
+        alert("Changes saved successfully");
     }
 </script>
 {% endblock %}

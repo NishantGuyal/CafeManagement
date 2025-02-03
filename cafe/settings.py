@@ -81,12 +81,12 @@ WSGI_APPLICATION = "cafe.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.mysql",  # Use MySQL
-        "NAME": "cafe",  # Your database name
-        "USER": "nishant",  # Your MySQL username
-        "PASSWORD": "nishant",  # Your MySQL password
-        "HOST": "localhost",  # Change if using a remote database
-        "PORT": "3306",  # Default MySQL port
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "cafe",
+        "USER": "nishant",
+        "PASSWORD": "nishant",
+        "HOST": "localhost",
+        "PORT": "3306",
         "OPTIONS": {
             "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
         },
