@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    # "jazzmin",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -42,6 +43,8 @@ INSTALLED_APPS = [
     "theme",
     "django_browser_reload",
     "cafe",
+    "django_filters",
+    "import_export",
 ]
 
 MIDDLEWARE = [
@@ -130,7 +133,7 @@ USE_TZ = True
 
 
 STATIC_URL = "static/"
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+# STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -144,4 +147,4 @@ INTERNAL_IPS = [
 ]
 
 LOGOUT_REDIRECT_URL = "admin_login"
-LOGIN_URL = "admin_login"  # Redirect to 'admin_login' view on login required
+LOGIN_URL = "admin_login"

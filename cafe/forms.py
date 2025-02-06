@@ -1,14 +1,19 @@
-# from django import forms
-# from .models import OrderDetail, User, Item
+from django import forms
 
 
-# class OrderDetailForm(forms.ModelForm):
-#     class Meta:
-#         model = OrderDetail
-#         fields = ["customer", "item", "counter"]
-#         widgets = {
-#             "counter": forms.NumberInput(attrs={"value": "0", "min": "0", "step": "1"}),
-#         }
+class CsvImportForm(forms.Form):
+    csv_file = forms.FileField()
 
-#     customer = forms.ModelChoiceField(queryset=User.objects.all(), label="User")
-#     item = forms.ModelChoiceField(queryset=Item.objects.all(), label="Item")
+
+class UserFilterForm(forms.Form):
+    username = forms.CharField(max_length=255, required=False, label="username")
+    department = forms.CharField(max_length=255, required=False, label="department")
+
+
+class ItemFilterForm(forms.Form):
+    item_name = forms.CharField(max_length=255, required=False, label="Item Name")
+    paid_unpaid = forms.MultipleChoiceField(
+        choices=[(True, "Paid"), (False, "Unpaid")],
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+    )

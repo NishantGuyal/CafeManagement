@@ -1,11 +1,17 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.utils.timezone import now
 from django.contrib import messages
-from .models import Order, Item, User, OrderDetail
 from django.http import HttpResponse
 from django.db.models import Sum, Q
-from django.contrib.auth.decorators import login_required
+import datetime
+from django.utils.dateparse import parse_date
+import csv
+from .models import Order, Item, User, OrderDetail
+from .resources import UserResource, ItemResource
+from .forms import CsvImportForm
+from .filters import ItemFilter, UserFilter
 
 
 @login_required
@@ -37,10 +43,12 @@ def admin_logout(request):
     return redirect("admin_login")
 
 
-@login_required
 def user_management(request):
     users = User.objects.filter(deleted_at__isnull=True)
-    return render(request, "users.html", {"users": users})
+    filterset = UserFilter(request.GET, queryset=users)
+    return render(
+        request, "users.html", {"users": filterset.qs, "filterset": filterset}
+    )
 
 
 def create_user(request):
@@ -74,9 +82,80 @@ def update_user(request, user_id):
 
 
 @login_required
+def user_export(request):
+    start_date = request.GET.get("start")
+    end_date = request.GET.get("end")
+
+    if not start_date or not end_date:
+        return HttpResponse("Invalid date range", status=400)
+
+    start_date = parse_date(start_date)
+    end_date = parse_date(end_date)
+
+    if not start_date or not end_date:
+        return HttpResponse("Invalid date format", status=400)
+
+    end_date = datetime.datetime.combine(end_date, datetime.time.max)
+
+    users = User.objects.filter(created_at__range=[start_date, end_date])
+
+    resource = UserResource()
+    dataset = resource.export(users)
+
+    response = HttpResponse(dataset.csv, content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="users_export.csv"'
+
+    return response
+
+
+@login_required
+def user_import(request):
+    if request.method == "POST" and request.FILES["csv_file"]:
+        csv_file = request.FILES["csv_file"]
+
+        if not csv_file.name.endswith(".csv"):
+            return HttpResponse("Only CSV files are allowed.")
+
+        dataset = csv_file.read().decode("utf-8")
+        imported_data = dataset.splitlines()
+        reader = csv.reader(imported_data)
+
+        next(reader)
+
+        for row in reader:
+            if len(row) < 2:
+                continue
+
+            username = row[0]
+            department = row[1]
+
+            current_time = now()
+
+            deleted_at = None
+            user = User(
+                username=username,
+                department=department,
+                created_at=current_time,
+                updated_at=current_time,
+                deleted_at=deleted_at,
+            )
+
+            user.save()
+
+        return HttpResponse("Data imported successfully!")
+
+    form = CsvImportForm()
+    return render(request, "import_csv.html", {"form": form})
+
+
+@login_required
 def item_list(request):
     items = Item.objects.filter(deleted_at__isnull=True)
-    return render(request, "items.html", {"items": items})
+    item_filter = ItemFilter(request.GET, queryset=items)
+
+    return render(
+        request, "items.html", {"items": item_filter.qs, "filter": item_filter}
+    )
 
 
 def create_item(request):
@@ -102,6 +181,73 @@ def remove_item(request, item_id):
         item.deleted_at = now()
         item.save()
         return redirect("item_list")
+
+
+@login_required
+def item_export(request):
+    start_date = request.GET.get("start")
+    end_date = request.GET.get("end")
+
+    if not start_date or not end_date:
+        return HttpResponse("Invalid date range", status=400)
+
+    start_date = parse_date(start_date)
+    end_date = parse_date(end_date)
+
+    if not start_date or not end_date:
+        return HttpResponse("Invalid date format", status=400)
+
+    end_date = datetime.datetime.combine(end_date, datetime.time.max)
+
+    items = Item.objects.filter(created_at__range=[start_date, end_date])
+
+    resource = ItemResource()
+    dataset = resource.export(items)
+
+    response = HttpResponse(dataset.csv, content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="items_export.csv"'
+
+    return response
+
+
+@login_required
+def item_import(request):
+    if request.method == "POST" and request.FILES["csv_file"]:
+        csv_file = request.FILES["csv_file"]
+
+        if not csv_file.name.endswith(".csv"):
+            return HttpResponse("Only CSV files are allowed.")
+
+        dataset = csv_file.read().decode("utf-8")
+        imported_data = dataset.splitlines()
+        reader = csv.reader(imported_data)
+
+        next(reader)
+
+        for row in reader:
+            if len(row) < 2:
+                continue
+
+            item_name = row[0]
+            paid_unpaid = row[1]
+
+            current_time = now()
+
+            deleted_at = None
+            item = Item(
+                item_name=item_name,
+                paid_unpaid=paid_unpaid,
+                created_at=current_time,
+                updated_at=current_time,
+                deleted_at=deleted_at,
+            )
+
+            item.save()
+
+        return HttpResponse("Data imported successfully!")
+
+    form = CsvImportForm()
+    return render(request, "import_csv.html", {"form": form})
 
 
 @login_required

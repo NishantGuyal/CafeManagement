@@ -5,6 +5,62 @@
 {% block content %}
 <div class="max-w-8xl mx-auto px-4 py-1">
     <h1 class="text-3xl font-semibold mb-6 text-center text-gray-800">Item Management</h1>
+    <!-- Export Button (SVG) -->
+    <div class="fixed right-4" id="exportBtn">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" 
+            class="size-9 cursor-pointer text-blue-500 hover:text-blue-700 transition">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+        </svg>          
+    </div>
+
+    <!-- Export Form (Hidden by default, positioned at bottom-right) -->
+    <div id="exportForm" class="hidden fixed right-4 p-4 border rounded-lg bg-white w-80 shadow-md">
+        <div class="flex justify-between items-center">
+            <h2 class="text-lg font-semibold">Export Data</h2>
+            <!-- Close Button -->
+            <button id="closeForm" class="text-red-500 hover:text-red-700">✖</button>
+        </div>
+        
+        <label class="block text-sm font-medium text-gray-700 mt-2">Start Date</label>
+        <input type="date" id="startDate" class="w-full p-2 border rounded-md mb-2">
+
+        <label class="block text-sm font-medium text-gray-700">End Date</label>
+        <input type="date" id="endDate" class="w-full p-2 border rounded-md mb-2">
+
+        <button id="exportDataBtn" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 w-full mt-2">
+            Export
+        </button>
+    </div>
+
+    <div class="fixed right-20" id="importBtn">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-9 cursor-pointer text-blue-500 hover:text-blue-700 transition">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+        </svg>
+    </div>
+
+    <form method="get" action="{% url 'item_list' %}" class="flex items-center space-x-4 p-4 bg-white shadow-md rounded-lg max-w-screen-xl mx-0">
+        <!-- Filter by Item Name -->
+        <div class="flex-1">
+            <label for="item_name" class="block text-sm font-medium text-gray-700">Item Name:</label>
+            {{ filter.form.item_name }}
+        </div>
+    
+        <!-- Filter by Paid/Unpaid -->
+        <div class="flex-1">
+            <label for="paid_unpaid" class="block text-sm font-medium text-gray-700">Paid/Unpaid:</label>
+            <div class="space-x-4">
+                <label><input type="checkbox" name="paid_unpaid" value="True" {% if "True" in request.GET.paid_unpaid %}checked{% endif %}> Paid</label>
+                <label><input type="checkbox" name="paid_unpaid" value="False" {% if "False" in request.GET.paid_unpaid %}checked{% endif %}> Unpaid</label>
+            </div>
+        </div>
+    
+        <!-- Filter Button -->
+        <div>
+            <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:ring-2 focus:ring-blue-500">
+                Filter
+            </button>
+        </div>
+    </form>
 
     <!-- Update Item Form -->
     <div id="updateItemForm" class="max-w-4xl mx-auto hidden mb-6 bg-white p-6 rounded-lg shadow-md">
@@ -110,6 +166,40 @@
         function confirmDelete() {
             return confirm("Are you sure you want to delete this item?");
         }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const exportBtn = document.getElementById("exportBtn");
+            const exportForm = document.getElementById("exportForm");
+            const exportDataBtn = document.getElementById("exportDataBtn");
+            const closeForm = document.getElementById("closeForm");
+        
+            exportBtn.addEventListener("click", () => {
+                exportForm.classList.toggle("hidden");
+            });
+        
+            closeForm.addEventListener("click", () => {
+                exportForm.classList.add("hidden");
+            });
+        
+            exportDataBtn.addEventListener("click", () => {
+                const startDate = document.getElementById("startDate").value;
+                const endDate = document.getElementById("endDate").value;
+        
+                if (!startDate || !endDate) {
+                    alert("Please select both start and end dates.");
+                    return;
+                }
+        
+                window.location.href = `/item-exports?start=${startDate}&end=${endDate}`;
+            });
+        });
+
+        const importBtn = document.getElementById("importBtn");
+
+        importBtn.addEventListener("click", () => {
+            window.location.href = "/item-imports/";
+        });
+
     </script>
 </div>
 

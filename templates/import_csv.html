@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Import CSV</title>
+</head>
+<body>
+    <h1>Upload CSV to Import User Data</h1>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Upload CSV</button>
+    </form>
+
+    {% if success %}
+        <p>CSV uploaded and data imported successfully!</p>
+    {% endif %}
+</body>
+</html>
