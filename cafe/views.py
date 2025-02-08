@@ -6,12 +6,14 @@ from django.contrib import messages
 from django.http import HttpResponse
 from django.db.models import Sum, Q
 import datetime
+from django_tables2.config import RequestConfig
 from django.utils.dateparse import parse_date
 import csv
 from .models import Order, Item, User, OrderDetail
 from .resources import UserResource, ItemResource
 from .forms import CsvImportForm
-from .filters import ItemFilter, UserFilter
+from .filters import ItemFilter, UserFilter, OrderDetailFilter
+from .tables import UserTable, ItemTable, OrderTable
 
 
 @login_required
@@ -49,6 +51,12 @@ def user_management(request):
     return render(
         request, "users.html", {"users": filterset.qs, "filterset": filterset}
     )
+
+
+def user_table(request):
+    table = UserTable(User.objects.all())
+    RequestConfig(request, paginate={"per_page": 10}).configure(table)
+    return render(request, "user_table.html", {"table": table})
 
 
 def create_user(request):
@@ -181,6 +189,12 @@ def remove_item(request, item_id):
         item.deleted_at = now()
         item.save()
         return redirect("item_list")
+
+
+def item_table(request):
+    table = ItemTable(Item.objects.all())
+    RequestConfig(request, paginate={"per_page": 10}).configure(table)
+    return render(request, "item_table.html", {"table": table})
 
 
 @login_required
@@ -383,3 +397,13 @@ def update_order(request, order_id):
             "items": items,
         },
     )
+
+
+def order_table(request):
+    orders = OrderDetail.objects.filter(deleted_at__isnull=True)
+
+    order_filter = OrderDetailFilter(request.GET, queryset=orders)
+    table = OrderTable(order_filter.qs)
+    RequestConfig(request, paginate={"per_page": 10}).configure(table)
+
+    return render(request, "order_table.html", {"table": table, "filter": order_filter})

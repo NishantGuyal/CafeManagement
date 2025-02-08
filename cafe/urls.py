@@ -42,4 +42,7 @@ urlpatterns = [
     path("user-imports/", views.user_import, name="user_import"),
     path("item-exports/", views.item_export, name="item_export"),
     path("item-imports/", views.item_import, name="item_import"),
+    path("user_table/", views.user_table, name="user_table"),
+    path("item_table/", views.item_table, name="item_table"),
+    path("order_table/", views.order_table, name="order_table"),
 ]

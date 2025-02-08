@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     "cafe",
     "django_filters",
     "import_export",
+    "django_tables2",
+    "widget_tweaks",
 ]
 
 MIDDLEWARE = [
