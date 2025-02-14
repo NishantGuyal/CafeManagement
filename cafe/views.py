@@ -14,11 +14,111 @@ from .resources import UserResource, ItemResource
 from .forms import CsvImportForm
 from .filters import ItemFilter, UserFilter, OrderDetailFilter
 from .tables import UserTable, ItemTable, OrderTable
+import json
 
 
 @login_required
 def index(request):
-    return render(request, "index.html")
+    customer_ids = request.GET.getlist("customer")
+    item_ids = request.GET.getlist("item")
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+
+    if "" in customer_ids:
+        customer_ids = [user.user_id for user in User.objects.all()]
+    if "" in item_ids:
+        item_ids = [item.item_id for item in Item.objects.all()]
+
+    queryset = OrderDetail.objects.filter(deleted_at__isnull=True)
+
+    if customer_ids:
+        queryset = queryset.filter(customer_id__in=customer_ids)
+    if item_ids:
+        queryset = queryset.filter(item_id__in=item_ids)
+    if start_date:
+        queryset = queryset.filter(ordered_at__date__gte=parse_date(start_date))
+    if end_date:
+        queryset = queryset.filter(ordered_at__date__lte=parse_date(end_date))
+
+    data = queryset.values("customer__username", "item__item_name").annotate(
+        total_quantity=Sum("counter")
+    )
+
+    chart_data = {}
+    for entry in data:
+        customer = entry["customer__username"]
+        item = entry["item__item_name"]
+        qty = entry["total_quantity"]
+
+        if customer not in chart_data:
+            chart_data[customer] = {}
+        chart_data[customer][item] = qty
+
+    customers = list(chart_data.keys())
+    items = set()
+    datasets = []
+
+    for customer, item_data in chart_data.items():
+        for item, qty in item_data.items():
+            items.add(item)
+
+    items = list(items)
+
+    colors = [
+        "rgba(255, 99, 132, 0.5)",  # Red
+        "rgba(54, 162, 235, 0.5)",  # Blue
+        "rgba(255, 206, 86, 0.5)",  # Yellow
+        "rgba(75, 192, 192, 0.5)",  # Green
+        "rgba(153, 102, 255, 0.5)",  # Purple
+        "rgba(255, 159, 64, 0.5)",  # Orange
+        "rgba(255, 99, 71, 0.5)",  # Tomato
+        "rgba(0, 255, 255, 0.5)",  # Cyan
+        "rgba(255, 20, 147, 0.5)",  # DeepPink
+        "rgba(34, 193, 195, 0.5)",  # Aqua
+        "rgba(253, 187, 45, 0.5)",  # Mustard
+        "rgba(204, 51, 255, 0.5)",  # Violet
+        "rgba(128, 128, 0, 0.5)",  # Olive
+        "rgba(255, 69, 0, 0.5)",  # Red-Orange
+        "rgba(144, 238, 144, 0.5)",  # LightGreen
+        "rgba(135, 206, 250, 0.5)",  # LightSkyBlue
+        "rgba(238, 130, 238, 0.5)",  # Violet
+        "rgba(64, 224, 208, 0.5)",  # Turquoise
+        "rgba(255, 105, 180, 0.5)",  # HotPink
+    ]
+
+    for idx, item in enumerate(items):
+        dataset = {
+            "label": item,
+            "data": [chart_data[customer].get(item, 0) for customer in customers],
+            "backgroundColor": colors[idx % len(colors)],
+            "borderColor": colors[idx % len(colors)].replace("0.5", "1"),
+            "borderWidth": 1,
+        }
+        datasets.append(dataset)
+
+    item_data = queryset.values("item__item_name").annotate(
+        total_quantity=Sum("counter")
+    )
+
+    item_chart_data = {}
+    for entry in item_data:
+        item = entry["item__item_name"]
+        qty = entry["total_quantity"]
+        item_chart_data[item] = qty
+
+    items_chart = list(item_chart_data.keys())
+    items_chart_quantities = list(item_chart_data.values())
+
+    context = {
+        "customers": User.objects.all(),
+        "items": Item.objects.all(),
+        "customers_labels": json.dumps(customers),
+        "datasets": json.dumps(datasets),
+        "items_for_second_chart": json.dumps(items_chart),
+        "quantities_for_items": json.dumps(items_chart_quantities),
+    }
+
+    return render(request, "index.html", context)
 
 
 def admin_login(request):
